@@ -23,7 +23,7 @@ class BoardCubit extends Cubit<BoardState> {
   late int _width, _height;
   late List<List<TileCubit>> _tileCubits;
   List<List<TileCubit>> get tileCubits => _tileCubits;
-  late Timer _timer;
+  Timer? _timer;
   bool computing = false;
 
   void initBoard({required int columns, required int rows}) {
@@ -44,13 +44,15 @@ class BoardCubit extends Cubit<BoardState> {
   }
 
   void forward() {
+    if (_timer != null) return;
+
     _timer = Timer.periodic(new Duration(milliseconds: 100), (_) {
       if (!computing) nextGeneration();
     });
   }
 
   void pause() {
-    _timer.cancel();
+    _timer?.cancel();
   }
 
   void nextGeneration() {
@@ -86,36 +88,57 @@ class BoardCubit extends Cubit<BoardState> {
     List<TilePosition> neighbours = [];
     int aliveCount = 0, deadCount = 0;
 
-    if (pos.row > 0) {
-      neighbours.add(TilePosition(pos.row - 1, pos.col));
+    int prevRowIndex = pos.row - 1;
+    int nextRowIndex = pos.row + 1;
+    int nextColumnIndex = pos.col + 1;
+    int prevColumnIndex = pos.col - 1;
 
-      if (pos.col > 0) {
-        neighbours.add(TilePosition(pos.row - 1, pos.col - 1));
-      }
-
-      if (pos.col < _width - 1) {
-        neighbours.add(TilePosition(pos.row - 1, pos.col + 1));
-      }
+    if (prevRowIndex == -1) {
+      prevRowIndex = _height - 1;
     }
 
-    if (pos.row < _height - 1) {
-      neighbours.add(TilePosition(pos.row + 1, pos.col));
+    if (nextRowIndex == _height) {
+      nextRowIndex = 0;
+    }
 
-      if (pos.col < _width - 1) {
-        neighbours.add(TilePosition(pos.row + 1, pos.col + 1));
-      }
+    if (prevColumnIndex == -1) {
+      prevColumnIndex = _width - 1;
+    }
 
-      if (pos.col > 0) {
-        neighbours.add(TilePosition(pos.row + 1, pos.col - 1));
-      }
+    if (nextColumnIndex == _width) {
+      nextColumnIndex = 0;
+    }
+
+    if (pos.col > 0 && pos.row > 0) {
+      neighbours.add(TilePosition(prevRowIndex, prevColumnIndex));
+    }
+
+    if (pos.row > 0) {
+      neighbours.add(TilePosition(prevRowIndex, pos.col));
+    }
+
+    if (pos.row > 0 && pos.col < _width - 1) {
+      neighbours.add(TilePosition(prevRowIndex, nextColumnIndex));
     }
 
     if (pos.col > 0) {
-      neighbours.add(TilePosition(pos.row, pos.col - 1));
+      neighbours.add(TilePosition(pos.row, prevColumnIndex));
     }
 
     if (pos.col < _width - 1) {
-      neighbours.add(TilePosition(pos.row, pos.col + 1));
+      neighbours.add(TilePosition(pos.row, nextColumnIndex));
+    }
+
+    if (pos.row < _height - 1 && pos.col > 0) {
+      neighbours.add(TilePosition(nextRowIndex, prevColumnIndex));
+    }
+
+    if (pos.row < _height - 1) {
+      neighbours.add(TilePosition(nextRowIndex, pos.col));
+    }
+
+    if (pos.col < _width - 1 && pos.col < _width - 1) {
+      neighbours.add(TilePosition(nextRowIndex, nextColumnIndex));
     }
 
     for (final neighbour in neighbours) {

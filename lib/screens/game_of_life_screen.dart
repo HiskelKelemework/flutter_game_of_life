@@ -24,11 +24,16 @@ class _GameOfLifeScreenState extends State<GameOfLifeScreen> {
 
     final boardCubit = BlocProvider.of<BoardCubit>(context);
     boardCubit.initBoard(rows: rowCount, columns: columnCount);
-    boardCubit.forward();
 
     return Scaffold(
       body: Column(
         children: [
+          TextButton(
+            onPressed: () {
+              boardCubit.forward();
+            },
+            child: Text("Start"),
+          ),
           for (final i in List.generate(rowCount, (i) => i))
             Row(
               children: [

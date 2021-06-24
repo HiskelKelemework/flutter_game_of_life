@@ -19,7 +19,6 @@ class Tile extends StatelessWidget {
 
         return InkWell(
           onTap: tileCubit.toggle,
-          onHover: (_) => tileCubit.reserect(),
           child: Padding(
             padding: const EdgeInsets.all(1.0),
             child: Container(
